@@ -9,14 +9,13 @@ class AdditionalInfo
     public function __construct(
         protected ?string $purpose = null,
         protected ?string $terminalLabel = null,
-    )
-    {
+    ) {
     }
 
     public function build(): string
     {
         return
             ($this->terminalLabel ? StringUtil::buildWithLength('01', $this->terminalLabel) : '')
-            . ($this->purpose ? StringUtil::buildWithLength('08', $this->purpose) : null);
+            .($this->purpose ? StringUtil::buildWithLength('08', $this->purpose) : null);
     }
 }

@@ -27,12 +27,14 @@ class VietQrCode
     public function setData(VietQrId $id, $data): static
     {
         $this->data[$id->value] = $data;
+
         return $this;
     }
 
     /**
      * Data version of VietQR code. Default: 01
-     * @param string $dataVersion
+     *
+     * @param  string  $dataVersion
      * @return $this
      */
     public function formatIndicator(string $dataVersion = '01'): static
@@ -42,7 +44,8 @@ class VietQrCode
 
     /**
      * Dynamic (one time) or Static (reusable)
-     * @param InitializationMethod $method
+     *
+     * @param  InitializationMethod  $method
      * @return $this
      */
     public function initiationMethod(InitializationMethod $method): static
@@ -52,7 +55,8 @@ class VietQrCode
 
     /**
      * Currency of amount
-     * @param Currency $currency
+     *
+     * @param  Currency  $currency
      * @return $this
      */
     public function currency(Currency $currency): static
@@ -62,7 +66,8 @@ class VietQrCode
 
     /**
      * Set merchant info object
-     * @param MerchantInfo $merchant
+     *
+     * @param  MerchantInfo  $merchant
      * @return $this
      */
     public function merchantObject(MerchantInfo $merchant): static
@@ -72,9 +77,10 @@ class VietQrCode
 
     /**
      * Create merchant info object, and set it
-     * @param string $acquirerId
-     * @param string $merchantId
-     * @param Service $service
+     *
+     * @param  string  $acquirerId
+     * @param  string  $merchantId
+     * @param  Service  $service
      * @return $this
      */
     public function merchant(...$args): static
@@ -94,7 +100,8 @@ class VietQrCode
 
     /**
      * Amount of the transaction
-     * @param float $amount
+     *
+     * @param  float  $amount
      * @return $this
      */
     public function amount(float $amount): static
@@ -104,7 +111,8 @@ class VietQrCode
 
     /**
      * Set nation
-     * @param string $nation nation code. Ex: VN
+     *
+     * @param  string  $nation nation code. Ex: VN
      * @return $this
      */
     public function nation(string $nation): static
@@ -114,6 +122,7 @@ class VietQrCode
 
     /**
      * Build the final string
+     *
      * @return string
      */
     public function build(): string
@@ -125,11 +134,13 @@ class VietQrCode
         foreach ($this->data as $id => $data) {
             if (is_object($data) && enum_exists($data::class)) {
                 $result .= StringUtil::buildWithLength($id, $data->value);
+
                 continue;
             }
 
             if (is_object($data) && method_exists($data, 'build')) {
                 $result .= StringUtil::buildWithLength($id, $data->build());
+
                 continue;
             }
 
@@ -140,7 +151,7 @@ class VietQrCode
 
         $crc = Crc16::calcAsHex($result);
 
-        return $result . $crc;
+        return $result.$crc;
     }
 
     public function generateQr($format = 'svg')

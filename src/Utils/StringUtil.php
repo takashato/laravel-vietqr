@@ -10,7 +10,7 @@ class StringUtil
         $paddedLength = str_pad($length, ceil(log10($maxLength)), '0', STR_PAD_LEFT);
 
         return str_pad($id, 2, '0', STR_PAD_LEFT)
-            . $paddedLength
-            . $content;
+            .$paddedLength
+            .$content;
     }
 }
