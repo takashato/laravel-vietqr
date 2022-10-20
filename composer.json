@@ -17,8 +17,8 @@
     ],
     "require": {
         "php": "^8.1",
-        "chillerlan/php-qrcode": "^4.3",
         "illuminate/contracts": "^9.0",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-package-tools": "^1.13.0"
     },
     "require-dev": {

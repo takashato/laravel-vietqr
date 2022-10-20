@@ -2,6 +2,7 @@
 
 namespace Takashato\VietQr;
 
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Takashato\VietQr\Data\AdditionalInfo;
 use Takashato\VietQr\Data\MerchantInfo;
 use Takashato\VietQr\Enums\Currency;
@@ -140,5 +141,15 @@ class VietQrCode
         $crc = Crc16::calcAsHex($result);
 
         return $result . $crc;
+    }
+
+    public function generateQr($format = 'svg')
+    {
+        return QrCode::format($format)->size(200)->generate($this->build());
+    }
+
+    public function generateQrBase64(): string
+    {
+        return base64_encode($this->generateQr());
     }
 }
