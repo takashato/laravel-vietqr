@@ -30,8 +30,8 @@ php artisan vendor:publish --tag="laravel-vietqr-views"
 ## Usage
 
 ```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+$vietQr = new Takashato\VietQr();
+echo $vietQr->echoPhrase('Hello, Takashato!');
 ```
 
 ## Testing
