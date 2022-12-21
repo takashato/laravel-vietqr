@@ -154,13 +154,16 @@ class VietQrCode
         return $result.$crc;
     }
 
-    public function generateQr($format = 'svg')
+    public function generateQr(string $format = 'svg', int $size = 200)
     {
-        return QrCode::format($format)->size(200)->generate($this->build());
+        return QrCode::format($format)
+            ->errorCorrection('h')
+            ->size($size)
+            ->generate($this->build());
     }
 
-    public function generateQrBase64(): string
+    public function generateQrBase64(...$args): string
     {
-        return base64_encode($this->generateQr());
+        return base64_encode($this->generateQr(...$args));
     }
 }
