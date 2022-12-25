@@ -11,5 +11,7 @@ class VietQrServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('vietqr');
+
+        $this->app->alias(\Takashato\VietQr\Facades\VietQr::class, 'VietQr');
     }
 }
