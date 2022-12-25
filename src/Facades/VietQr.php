@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Facade;
  */
 class VietQr extends Facade
 {
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return \Takashato\VietQr\VietQr::class;
     }
