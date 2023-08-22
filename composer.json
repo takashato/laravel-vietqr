@@ -63,7 +63,7 @@
                 "Takashato\\VietQr\\VietQrServiceProvider"
             ],
             "aliases": {
-                "VietQr": "VietQr"
+                "VietQr": "Takashato\\VietQr"
             }
         }
     },

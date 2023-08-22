@@ -2,12 +2,12 @@
 
 namespace Takashato\VietQr;
 
+use Closure;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Takashato\VietQr\Data\AdditionalInfo;
 use Takashato\VietQr\Data\MerchantInfo;
 use Takashato\VietQr\Enums\Currency;
 use Takashato\VietQr\Enums\InitializationMethod;
-use Takashato\VietQr\Enums\Service;
 use Takashato\VietQr\Enums\VietQrId;
 use Takashato\VietQr\Utils\Crc16;
 use Takashato\VietQr\Utils\StringUtil;
@@ -24,7 +24,7 @@ class VietQrCode
             ->currency(Currency::VND);
     }
 
-    public function setData(VietQrId $id, $data): static
+    public function setData(VietQrId $id, $data): self
     {
         $this->data[$id->value] = $data;
 
@@ -34,10 +34,10 @@ class VietQrCode
     /**
      * Data version of VietQR code. Default: 01
      *
-     * @param  string  $dataVersion
+     * @param string $dataVersion
      * @return $this
      */
-    public function formatIndicator(string $dataVersion = '01'): static
+    public function formatIndicator(string $dataVersion = '01'): self
     {
         return $this->setData(VietQrId::FORMAT_INDICATOR, $dataVersion);
     }
@@ -45,21 +45,31 @@ class VietQrCode
     /**
      * Dynamic (one time) or Static (reusable)
      *
-     * @param  InitializationMethod  $method
+     * @param InitializationMethod $method
      * @return $this
      */
-    public function initiationMethod(InitializationMethod $method): static
+    public function initiationMethod(InitializationMethod $method): self
     {
         return $this->setData(VietQrId::INITIATION_METHOD, $method);
+    }
+
+    public function dynamicMethod()
+    {
+        return $this->initiationMethod(InitializationMethod::DYNAMIC);
+    }
+
+    public function staticMethod()
+    {
+        return $this->initiationMethod(InitializationMethod::STATIC);
     }
 
     /**
      * Currency of amount
      *
-     * @param  Currency  $currency
+     * @param Currency $currency
      * @return $this
      */
-    public function currency(Currency $currency): static
+    public function currency(Currency $currency): self
     {
         return $this->setData(VietQrId::TRANSACTION_CURRENCY, $currency);
     }
@@ -67,44 +77,64 @@ class VietQrCode
     /**
      * Set merchant info object
      *
-     * @param  MerchantInfo  $merchant
+     * @param MerchantInfo $merchant
      * @return $this
      */
-    public function merchantObject(MerchantInfo $merchant): static
+    public function merchantObject(MerchantInfo $merchant): self
     {
         return $this->setData(VietQrId::MERCHANT_ACCOUNT_INFORMATION, $merchant);
+    }
+
+    public function withMerchant(Closure|MerchantInfo $closure)
+    {
+        if ($closure instanceof Closure) {
+            $merchantInfo = tap(new MerchantInfo(), $closure);
+
+            return $this->merchantObject($merchantInfo);
+        }
+
+        return $this->merchantObject($closure);
     }
 
     /**
      * Create merchant info object, and set it
      *
-     * @param  string  $acquirerId
-     * @param  string  $merchantId
-     * @param  Service  $service
+     * @param mixed ...$args
      * @return $this
      */
-    public function merchant(...$args): static
+    public function merchant(...$args): self
     {
         return $this->setData(VietQrId::MERCHANT_ACCOUNT_INFORMATION, new MerchantInfo(...$args));
     }
 
-    public function additionalInfoObject(AdditionalInfo $info): static
+    public function additionalInfoObject(AdditionalInfo $info): self
     {
         return $this->setData(VietQrId::ADDITIONAL_INFO, $info);
     }
 
-    public function additionalInfo(...$args): static
+    public function additionalInfo(...$args): self
     {
         return $this->setData(VietQrId::ADDITIONAL_INFO, new AdditionalInfo(...$args));
+    }
+
+    public function withAdditionalInfo(Closure|AdditionalInfo $closure): self
+    {
+        if ($closure instanceof Closure) {
+            $additionalInfo = tap(new AdditionalInfo(), $closure);
+
+            return $this->additionalInfoObject($additionalInfo);
+        }
+
+        return $this->additionalInfoObject($closure);
     }
 
     /**
      * Amount of the transaction
      *
-     * @param  float  $amount
+     * @param float $amount
      * @return $this
      */
-    public function amount(float $amount): static
+    public function amount(float $amount): self
     {
         return $this->setData(VietQrId::TRANSACTION_AMOUNT, strval($amount));
     }
@@ -112,10 +142,10 @@ class VietQrCode
     /**
      * Set nation
      *
-     * @param  string  $nation nation code. Ex: VN
+     * @param string $nation nation code. Ex: VN
      * @return $this
      */
-    public function nation(string $nation): static
+    public function nation(string $nation): self
     {
         return $this->setData(VietQrId::NATION, $nation);
     }
@@ -151,7 +181,7 @@ class VietQrCode
 
         $crc = Crc16::calcAsHex($result);
 
-        return $result.$crc;
+        return $result . $crc;
     }
 
     public function generateQr(string $format = 'svg', int $size = 200)

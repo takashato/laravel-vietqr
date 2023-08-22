@@ -12,6 +12,10 @@ class VietQrServiceProvider extends PackageServiceProvider
         $package
             ->name('vietqr');
 
+        $this->app->bind(VietQr::class, function () {
+            return new VietQr();
+        });
+
         $this->app->alias(\Takashato\VietQr\Facades\VietQr::class, 'VietQr');
     }
 }
