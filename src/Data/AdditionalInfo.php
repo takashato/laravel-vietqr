@@ -9,9 +9,7 @@ class AdditionalInfo
     public function __construct(
         protected ?string $purpose = null,
         protected ?string $terminalLabel = null,
-    )
-    {
-    }
+    ) {}
 
     public function purpose(string $purpose): self
     {

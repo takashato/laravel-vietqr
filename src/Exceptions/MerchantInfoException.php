@@ -2,7 +2,4 @@
 
 namespace Takashato\VietQr\Exceptions;
 
-class MerchantInfoException extends VietQrException
-{
-
-}
+class MerchantInfoException extends VietQrException {}

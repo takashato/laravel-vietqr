@@ -9,12 +9,10 @@ use Takashato\VietQr\Utils\StringUtil;
 class MerchantInfo
 {
     public function __construct(
-        protected          $acquirerId = null,
-        protected          $merchantId = null,
-        protected ?Service $service = null
-    )
-    {
-    }
+        protected $acquirerId = null,
+        protected $merchantId = null,
+        protected ?Service $service = null,
+    ) {}
 
     public function setAcquirerId($acquirerId): self
     {
@@ -46,9 +44,10 @@ class MerchantInfo
         }
 
         return StringUtil::buildWithLength('00', 'A000000727')
-            . StringUtil::buildWithLength('01',
+            . StringUtil::buildWithLength(
+                '01',
                 StringUtil::buildWithLength('00', $this->acquirerId)
-                . StringUtil::buildWithLength('01', $this->merchantId)
+                . StringUtil::buildWithLength('01', $this->merchantId),
             )
             . StringUtil::buildWithLength('02', $this->service->value);
     }
