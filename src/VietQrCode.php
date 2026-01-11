@@ -6,6 +6,7 @@ use Closure;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Takashato\VietQr\Data\AdditionalInfo;
 use Takashato\VietQr\Data\MerchantInfo;
+use Takashato\VietQr\Enums\Bank;
 use Takashato\VietQr\Enums\Currency;
 use Takashato\VietQr\Enums\InitializationMethod;
 use Takashato\VietQr\Enums\VietQrId;
@@ -22,6 +23,66 @@ class VietQrCode
             ->formatIndicator()
             ->nation('VN')
             ->currency(Currency::VND);
+    }
+
+    /**
+     * Quick static QR for bank account transfer.
+     *
+     * @param  Bank|string  $bank  Bank enum or BIN code
+     * @param  string  $accountNumber  Account number
+     * @param  float|null  $amount  Optional: fixed amount (makes it dynamic)
+     * @param  string|null  $purpose  Optional: payment purpose/description
+     */
+    public static function bankAccount(
+        Bank|string $bank,
+        string $accountNumber,
+        ?float $amount = null,
+        ?string $purpose = null,
+    ): self {
+        $qr = (new self())
+            ->withMerchant(fn (MerchantInfo $m) => $m->forAccountTransfer($bank, $accountNumber));
+
+        if ($amount !== null) {
+            $qr->dynamicMethod()->amount($amount);
+        } else {
+            $qr->staticMethod();
+        }
+
+        if ($purpose !== null) {
+            $qr->withAdditionalInfo(fn (AdditionalInfo $a) => $a->purpose($purpose));
+        }
+
+        return $qr;
+    }
+
+    /**
+     * Quick static QR for card transfer.
+     *
+     * @param  Bank|string  $bank  Bank enum or BIN code
+     * @param  string  $cardNumber  Card number
+     * @param  float|null  $amount  Optional: fixed amount (makes it dynamic)
+     * @param  string|null  $purpose  Optional: payment purpose/description
+     */
+    public static function bankCard(
+        Bank|string $bank,
+        string $cardNumber,
+        ?float $amount = null,
+        ?string $purpose = null,
+    ): self {
+        $qr = (new self())
+            ->withMerchant(fn (MerchantInfo $m) => $m->forCardTransfer($bank, $cardNumber));
+
+        if ($amount !== null) {
+            $qr->dynamicMethod()->amount($amount);
+        } else {
+            $qr->staticMethod();
+        }
+
+        if ($purpose !== null) {
+            $qr->withAdditionalInfo(fn (AdditionalInfo $a) => $a->purpose($purpose));
+        }
+
+        return $qr;
     }
 
     public function setData(VietQrId $id, $data): self
