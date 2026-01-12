@@ -9,6 +9,7 @@ use Takashato\VietQr\Data\MerchantInfo;
 use Takashato\VietQr\Enums\Bank;
 use Takashato\VietQr\Enums\Currency;
 use Takashato\VietQr\Enums\InitializationMethod;
+use Takashato\VietQr\Enums\Service;
 use Takashato\VietQr\Enums\VietQrId;
 use Takashato\VietQr\Utils\Crc16;
 use Takashato\VietQr\Utils\StringUtil;
@@ -21,7 +22,7 @@ class VietQrCode
     {
         $this
             ->formatIndicator()
-            ->nation('VN')
+            ->countryCode('VN')
             ->currency(Currency::VND);
     }
 
@@ -40,7 +41,7 @@ class VietQrCode
         ?string $purpose = null,
     ): self {
         $qr = (new self())
-            ->withMerchant(fn (MerchantInfo $m) => $m->forAccountTransfer($bank, $accountNumber));
+            ->withMerchant(fn(MerchantInfo $m) => $m->forAccountTransfer($bank, $accountNumber));
 
         if ($amount !== null) {
             $qr->dynamicMethod()->amount($amount);
@@ -49,7 +50,7 @@ class VietQrCode
         }
 
         if ($purpose !== null) {
-            $qr->withAdditionalInfo(fn (AdditionalInfo $a) => $a->purpose($purpose));
+            $qr->withAdditionalInfo(fn(AdditionalInfo $a) => $a->purpose($purpose));
         }
 
         return $qr;
@@ -70,7 +71,7 @@ class VietQrCode
         ?string $purpose = null,
     ): self {
         $qr = (new self())
-            ->withMerchant(fn (MerchantInfo $m) => $m->forCardTransfer($bank, $cardNumber));
+            ->withMerchant(fn(MerchantInfo $m) => $m->forCardTransfer($bank, $cardNumber));
 
         if ($amount !== null) {
             $qr->dynamicMethod()->amount($amount);
@@ -79,7 +80,49 @@ class VietQrCode
         }
 
         if ($purpose !== null) {
-            $qr->withAdditionalInfo(fn (AdditionalInfo $a) => $a->purpose($purpose));
+            $qr->withAdditionalInfo(fn(AdditionalInfo $a) => $a->purpose($purpose));
+        }
+
+        return $qr;
+    }
+
+    /**
+     * Quick QR for merchant payment (QR PUSH).
+     *
+     * @param  Bank|string  $bank  Bank enum or BIN code
+     * @param  string  $merchantId  Merchant account number
+     * @param  string  $merchantName  Merchant name (max 25 chars)
+     * @param  string  $merchantCity  Merchant city (max 15 chars)
+     * @param  string  $mcc  Merchant Category Code (4 digits)
+     * @param  float|null  $amount  Optional: fixed amount (makes it dynamic)
+     * @param  string|null  $purpose  Optional: payment purpose/description
+     */
+    public static function merchantPayment(
+        Bank|string $bank,
+        string $merchantId,
+        string $merchantName,
+        string $merchantCity,
+        string $mcc = '5999',
+        ?float $amount = null,
+        ?string $purpose = null,
+    ): self {
+        $qr = (new self())
+            ->withMerchant(fn(MerchantInfo $m) => $m
+                ->setAcquirerId($bank)
+                ->setMerchantId($merchantId)
+                ->setService(Service::QR_PUSH))
+            ->merchantName($merchantName)
+            ->merchantCity($merchantCity)
+            ->merchantCategoryCode($mcc);
+
+        if ($amount !== null) {
+            $qr->dynamicMethod()->amount($amount);
+        } else {
+            $qr->staticMethod();
+        }
+
+        if ($purpose !== null) {
+            $qr->withAdditionalInfo(fn(AdditionalInfo $a) => $a->purpose($purpose));
         }
 
         return $qr;
@@ -201,14 +244,132 @@ class VietQrCode
     }
 
     /**
-     * Set nation
+     * Set country code (ISO 3166-1 alpha-2).
      *
-     * @param string $nation nation code. Ex: VN
+     * @param string $countryCode Country code (e.g., "VN")
+     * @return $this
+     */
+    public function countryCode(string $countryCode): self
+    {
+        return $this->setData(VietQrId::COUNTRY_CODE, $countryCode);
+    }
+
+    /**
+     * Set country code.
+     *
+     * @deprecated Use countryCode() instead
+     * @param string $nation Country code. Ex: VN
      * @return $this
      */
     public function nation(string $nation): self
     {
-        return $this->setData(VietQrId::NATION, $nation);
+        return $this->countryCode($nation);
+    }
+
+    /**
+     * Set merchant name (required for QR PUSH).
+     *
+     * @param string $merchantName Merchant name (max 25 chars)
+     * @return $this
+     */
+    public function merchantName(string $merchantName): self
+    {
+        return $this->setData(VietQrId::MERCHANT_NAME, $merchantName);
+    }
+
+    /**
+     * Set merchant city (required for QR PUSH).
+     *
+     * @param string $merchantCity Merchant city (max 15 chars)
+     * @return $this
+     */
+    public function merchantCity(string $merchantCity): self
+    {
+        return $this->setData(VietQrId::MERCHANT_CITY, $merchantCity);
+    }
+
+    /**
+     * Set postal code.
+     *
+     * @param string $postalCode Postal code (max 10 chars)
+     * @return $this
+     */
+    public function postalCode(string $postalCode): self
+    {
+        return $this->setData(VietQrId::POSTAL_CODE, $postalCode);
+    }
+
+    /**
+     * Set merchant category code (MCC).
+     *
+     * @param string $mcc 4-digit MCC (e.g., "5812" for restaurants)
+     * @return $this
+     */
+    public function merchantCategoryCode(string $mcc): self
+    {
+        return $this->setData(VietQrId::MERCHANT_CATEGORY_CODE, $mcc);
+    }
+
+    /**
+     * Alias for merchantCategoryCode().
+     */
+    public function mcc(string $mcc): self
+    {
+        return $this->merchantCategoryCode($mcc);
+    }
+
+    /**
+     * Set tip or convenience indicator.
+     *
+     * Values:
+     * - "01": Tip prompted (user enters tip)
+     * - "02": Convenience fee fixed (use convenienceFeeFixed())
+     * - "03": Convenience fee percentage (use convenienceFeePercentage())
+     *
+     * @param string $indicator Indicator value ("01", "02", or "03")
+     * @return $this
+     */
+    public function tipIndicator(string $indicator): self
+    {
+        return $this->setData(VietQrId::TIP_OR_CONVENIENCE_INDICATOR, $indicator);
+    }
+
+    /**
+     * Set fixed convenience fee amount.
+     * Automatically sets tip indicator to "02".
+     *
+     * @param float $amount Fixed fee amount
+     * @return $this
+     */
+    public function convenienceFeeFixed(float $amount): self
+    {
+        $this->tipIndicator('02');
+
+        return $this->setData(VietQrId::CONVENIENCE_FEE_FIXED, strval($amount));
+    }
+
+    /**
+     * Set convenience fee as percentage.
+     * Automatically sets tip indicator to "03".
+     *
+     * @param float $percentage Fee percentage (e.g., 5.5 for 5.5%)
+     * @return $this
+     */
+    public function convenienceFeePercentage(float $percentage): self
+    {
+        $this->tipIndicator('03');
+
+        return $this->setData(VietQrId::CONVENIENCE_FEE_PERCENTAGE, strval($percentage));
+    }
+
+    /**
+     * Enable tip prompting (user enters tip amount).
+     *
+     * @return $this
+     */
+    public function promptTip(): self
+    {
+        return $this->tipIndicator('01');
     }
 
     /**

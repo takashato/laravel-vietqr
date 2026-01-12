@@ -8,13 +8,12 @@ Generate VietQR codes for Vietnamese bank transfers. Follows [NAPAS VietQR v1.5.
 
 ## Features
 
-- Static QR codes (reusable, no fixed amount)
-- Dynamic QR codes (one-time use, with fixed amount)
-- Bank account transfers (IBFT to account)
-- Card transfers (IBFT to card)
-- 50+ Vietnamese banks with BIN codes
-- SVG, PNG, Base64 QR image generation
-- Fully tested against official NAPAS examples
+- **Static & Dynamic QR** - Reusable or one-time payment codes
+- **Account & Card Transfers** - IBFT to bank accounts or cards
+- **50+ Vietnamese Banks** - Type-safe bank enum with BIN codes
+- **Multiple Formats** - SVG, PNG, PDF, Base64 image generation
+- **Laravel Integration** - Service provider, facade, Laravel 10/11/12
+- **NAPAS Compliant** - Verified against official specification
 
 ## Requirements
 
@@ -27,7 +26,7 @@ Generate VietQR codes for Vietnamese bank transfers. Follows [NAPAS VietQR v1.5.
 composer require takashato/laravel-vietqr
 ```
 
-The package auto-registers its service provider.
+The package auto-registers via service provider.
 
 ## Quick Start
 
@@ -175,10 +174,29 @@ The `Bank` enum includes 50+ Vietnamese banks:
 <img src="data:image/png;base64,{{ VietQrCode::bankAccount(Bank::BIDV, '12345678901')->generateQrBase64('png', 250) }}" alt="VietQR">
 ```
 
+## Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+- **[Project Overview & PDR](./docs/project-overview-pdr.md)** - Feature list, requirements, roadmap
+- **[System Architecture](./docs/system-architecture.md)** - Component design, data flow, EMVCo structure
+- **[Codebase Summary](./docs/codebase-summary.md)** - File structure, design patterns, code organization
+- **[Code Standards](./docs/code-standards.md)** - Development guidelines, naming conventions, quality checks
+
 ## Testing
 
 ```bash
 composer test
+```
+
+## Code Quality
+
+```bash
+# Format code with Pint
+composer format
+
+# Run static analysis
+composer analyse
 ```
 
 ## Security

@@ -43,7 +43,7 @@ enum Bank: string
     case PG_BANK = '970430';
     case VIET_A_BANK = '970427';
     case BAOVIETBANK = '970438';
-    case GPBANK = '970406';
+    case GPBANK = '970408';
     case CBBANK = '970444';
     case VNCB = '970454';
     case VietCapitalBank = '970456';
